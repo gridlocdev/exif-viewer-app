@@ -35,6 +35,10 @@ build-windows:
 run-macos: build-macos
     open "dist/EXIF Viewer.app"
 
+# Regenerate the app icons from assets/icon.svg (needs Inkscape)
+icons:
+    scripts/make-icons.sh
+
 # Delete build output
 clean:
     rm -rf build dist src/*/bin src/*/obj tests/*/bin tests/*/obj

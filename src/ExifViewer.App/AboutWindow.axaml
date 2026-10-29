@@ -3,8 +3,9 @@
         x:Class="ExifViewer.App.AboutWindow"
         Title="About EXIF Viewer"
         SizeToContent="WidthAndHeight" CanResize="False"
-        WindowStartupLocation="CenterOwner">
+        Icon="/Assets/icon.png" WindowStartupLocation="CenterOwner">
   <StackPanel Margin="32,24" Spacing="6" HorizontalAlignment="Center" Width="280">
+    <Image Source="/Assets/icon.png" Width="96" Height="96" Margin="0,0,0,8" />
     <TextBlock Text="EXIF Viewer" FontSize="20" FontWeight="SemiBold" HorizontalAlignment="Center" />
     <TextBlock x:Name="VersionText" Opacity="0.6" HorizontalAlignment="Center" />
     <TextBlock Margin="0,8,0,0" TextWrapping="Wrap" TextAlignment="Center"

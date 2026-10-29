@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- EXIF Viewer app icon. Source for the files scripts/make-icons.sh generates.
+     The 1024 canvas follows Apple's icon grid: an 824-unit tile with transparent margin. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="tile" gradientUnits="userSpaceOnUse" x1="0" y1="100" x2="0" y2="924">
+      <stop offset="0" stop-color="#9F6BFF" />
+      <stop offset="1" stop-color="#6A2FD6" />
+    </linearGradient>
+    <clipPath id="photo">
+      <rect x="226" y="276" width="500" height="400" rx="56" />
+    </clipPath>
+  </defs>
+
+  <rect x="100" y="100" width="824" height="824" rx="185" fill="url(#tile)" />
+
+  <g transform="translate(-20 -32)">
+  <!-- The picture: an outlined frame with a sun and two hills. -->
+  <g clip-path="url(#photo)" fill="#FFFFFF">
+    <circle cx="362" cy="400" r="46" />
+    <path d="M 196 700 L 380 500 L 470 590 L 560 470 L 760 700 Z" opacity="0.92" />
+  </g>
+  <rect x="226" y="276" width="500" height="400" rx="56" fill="none" stroke="#FFFFFF" stroke-width="36" />
+
+  <!-- The magnifying glass. The lens is filled with the tile gradient so it sits on top of the picture. -->
+  <line x1="745" y1="745" x2="822" y2="822" stroke="#FFFFFF" stroke-width="64" stroke-linecap="round" />
+  <circle cx="660" cy="660" r="122" fill="url(#tile)" stroke="#FFFFFF" stroke-width="40" />
+  <circle cx="660" cy="660" r="102" fill="#FFFFFF" opacity="0.14" />
+  </g>
+</svg>

@@ -3,7 +3,7 @@
         xmlns:app="using:ExifViewer.App"
         xmlns:core="using:ExifViewer.Core"
         x:Class="ExifViewer.App.MainWindow"
-        Title="EXIF Viewer"
+        Title="EXIF Viewer" Icon="/Assets/icon.png"
         Width="1100" Height="720" MinWidth="640" MinHeight="400"
         DragDrop.AllowDrop="True">
 

@@ -39,7 +39,8 @@ src/ExifViewer.Core/        the parser: no package references at all
   Xmp/                      XMP packet flattening
 src/ExifViewer.App/         Avalonia window (code-behind), Quick Look preview, map links
 tests/ExifViewer.Core.Tests xUnit v3 tests; fixtures are built in code
-scripts/                    packaging for macOS, Windows, Linux
+scripts/                    packaging for macOS, Windows, Linux; icon rendering
+assets/icon.svg             the app icon's source drawing
 docs/                       these pages
 ```
 
@@ -122,6 +123,12 @@ real files, put them in `samples/` at the repository root, which git ignores.
   (`v0.2.0-beta.1`) becomes a pre-release.
 - macOS builds are ad-hoc signed; set `MAC_SIGN_IDENTITY` to sign with a Developer ID (then
   notarise). Windows builds are unsigned.
+
+## The app icon
+
+`assets/icon.svg` is the source. After changing it, run `just icons` (needs Inkscape) to regenerate
+`src/ExifViewer.App/Assets/`: `icon.icns` for the macOS bundle, `icon.ico` for the Windows .exe and
+`icon.png` for the window. The generated files are committed, so builds don't need Inkscape.
 
 ## Documentation
 
