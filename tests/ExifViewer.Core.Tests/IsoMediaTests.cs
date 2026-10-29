@@ -21,8 +21,8 @@ public class IsoMediaTests
         Assert.Equal("HEIC (HEIF, HEVC)", report.Format);
         Assert.Equal("heic", Value(report, "HEIF", "Major Brand"));
         Assert.Equal("Grid of tiles", Value(report, "HEIF", "Primary Image"));
-        Assert.Equal("4032", Value(report, "HEIF", "Image Width"));
-        Assert.Equal("3024", Value(report, "HEIF", "Image Height"));
+        Assert.Equal("3024×4032", Value(report, "HEIF", "Display Size"));
+        Assert.Equal("4032×3024", Value(report, "HEIF", "Stored Size"));
         Assert.Equal("90° counter-clockwise", Value(report, "HEIF", "Rotation"));
         Assert.Equal("Display P3", Value(report, "HEIF", "Color Primaries"));
         Assert.Equal("sRGB", Value(report, "HEIF", "Transfer Characteristics"));
@@ -45,10 +45,10 @@ public class IsoMediaTests
         Assert.Equal("0:00:12.500", Value(report, "QuickTime", "Duration"));
 
         Assert.Equal("HEVC (H.265)", Value(report, "Video Track", "Codec"));
-        Assert.Equal("1920", Value(report, "Video Track", "Width"));
+        Assert.Equal("1080×1920", Value(report, "Video Track", "Display Size"));
+        Assert.Equal("1920×1080", Value(report, "Video Track", "Stored Size"));
         Assert.Equal("90° clockwise", Value(report, "Video Track", "Rotation"));
         Assert.Equal("30 fps", Value(report, "Video Track", "Frame Rate"));
-        Assert.Equal("1920×1080", Value(report, "Video Track", "Coded Size"));
         Assert.Null(report.Find("Video Track", "Language"));
 
         Assert.Equal("AAC", Value(report, "Audio Track", "Codec"));
@@ -100,6 +100,15 @@ public class IsoMediaTests
             Assert.NotEmpty(MetadataReader.Read(file.AsMemory(0, file.Length - 20), "cut").Warnings);
         }
     }
+
+    [Theory]
+    [InlineData(0, "None")]
+    [InlineData(90, "90° clockwise")]
+    [InlineData(180, "180°")]
+    [InlineData(270, "90° counter-clockwise")]
+    [InlineData(-90, "90° counter-clockwise")]
+    public void Rotation_IsInPlainWords(int clockwise, string expected) =>
+        Assert.Equal(expected, IsoMedia.Rotation(clockwise));
 
     [Theory]
     [InlineData(12.5, "0:00:12.500")]

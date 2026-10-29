@@ -28,7 +28,11 @@ public partial class MainWindow : Window
         Patterns = ["*.mov", "*.mp4", "*.m4v", "*.3gp"],
     };
 
+    private const int SystemPreviewSize = 1600;
+
     private MetadataReport? report;
+    // Bumped on every open, so a slow Quick Look render for an earlier file is dropped.
+    private int previewVersion;
 
     public MainWindow()
     {
@@ -59,22 +63,60 @@ public partial class MainWindow : Window
             : $"{report.Format} · {tagCount} tags · " + string.Join(" · ", report.Warnings);
     }
 
-    private void ShowPreview(string path, MetadataReport metadata)
+    /// <summary>
+    /// The file itself when the platform decoder handles it (JPEG, PNG, WebP), else the embedded JPEG,
+    /// else (macOS only) a Quick Look thumbnail rendered in the background.
+    /// </summary>
+    private async void ShowPreview(string path, MetadataReport metadata)
     {
-        (PreviewImage.Source as IDisposable)?.Dispose();
-        // The file itself when the platform decoder handles it (JPEG, PNG, WebP), else the embedded JPEG.
+        int version = ++previewVersion;
         var bitmap = TryDecode(() => new Bitmap(path))
             ?? (metadata.Preview is { } jpeg ? TryDecode(() => new Bitmap(new MemoryStream(jpeg.ToArray()))) : null);
+        if (bitmap is not null || !SystemPreview.IsAvailable)
+        {
+            SetPreview(bitmap, metadata.Orientation, $"No preview for {metadata.Format}");
+            return;
+        }
+
+        SetPreview(null, null, "Rendering preview…");
+        var png = await SystemPreview.RenderAsync(path, SystemPreviewSize);
+        if (version != previewVersion)
+            return;
+        bitmap = png is null ? null : TryDecode(() => new Bitmap(new MemoryStream(png)));
+        // Quick Look applies the orientation itself.
+        SetPreview(bitmap, null, $"No preview for {metadata.Format}");
+    }
+
+    private void SetPreview(Bitmap? bitmap, int? orientation, string placeholder)
+    {
+        (PreviewImage.Source as IDisposable)?.Dispose();
         PreviewImage.Source = bitmap;
         PreviewPlaceholder.IsVisible = bitmap is null;
-        PreviewPlaceholder.Text = $"No preview for {metadata.Format}";
-        PreviewTransform.LayoutTransform = metadata.Orientation switch
+        PreviewPlaceholder.Text = placeholder;
+        PreviewTransform.LayoutTransform = UprightTransform(orientation);
+    }
+
+    /// <summary>What turns an image with this EXIF orientation right-side up: a mirror, a clockwise rotation, or both.</summary>
+    private static Transform? UprightTransform(int? orientation)
+    {
+        (bool mirror, double rotate) = orientation switch
         {
-            3 => new RotateTransform(180),
-            6 => new RotateTransform(90),
-            8 => new RotateTransform(270),
-            _ => null,
+            2 => (true, 0),
+            3 => (false, 180),
+            4 => (true, 180),
+            5 => (true, 270),
+            6 => (false, 90),
+            7 => (true, 90),
+            8 => (false, 270),
+            _ => (false, 0.0),
         };
+        if (!mirror)
+            return rotate == 0 ? null : new RotateTransform(rotate);
+        var group = new TransformGroup();
+        group.Children.Add(new ScaleTransform(-1, 1));
+        if (rotate != 0)
+            group.Children.Add(new RotateTransform(rotate));
+        return group;
     }
 
     private static Bitmap? TryDecode(Func<Bitmap> decode)

@@ -77,9 +77,10 @@ internal static class HeifReader
             report.Add(Directory, "Primary Image", ItemTypeName(primaryItem.Type));
         if (associations.TryGetValue(primary, out var indexes))
         {
-            foreach (int index in indexes)
-                if (index >= 1 && index <= properties.Count)
-                    DescribeProperty(r, properties[index - 1], report);
+            var primaryProperties = indexes.Where(i => i >= 1 && i <= properties.Count).Select(i => properties[i - 1]).ToList();
+            DescribeGeometry(r, primaryProperties, report);
+            foreach (var property in primaryProperties)
+                DescribeProperty(r, property, report);
         }
         report.Add(Directory, "Items", string.Join(", ", items.Values
             .GroupBy(i => i.Type)
@@ -219,18 +220,30 @@ internal static class HeifReader
         }
     }
 
+    /// <summary>
+    /// Size as displayed (after 'irot'), the stored size when rotation swaps it, and the rotation in plain words.
+    /// 'irot' counts quarter turns counter-clockwise.
+    /// </summary>
+    private static void DescribeGeometry(EndianReader r, List<IsoBox> properties, ReportBuilder report)
+    {
+        int quarterTurns = properties.FirstOrDefault(p => p.Type == "irot") is { Type: "irot" } irot ? r.U8(irot.BodyOffset) & 3 : 0;
+        if (properties.FirstOrDefault(p => p.Type == "ispe") is { Type: "ispe" } ispe)
+        {
+            uint width = r.U32(ispe.BodyOffset + 4), height = r.U32(ispe.BodyOffset + 8);
+            bool swapped = quarterTurns % 2 == 1;
+            report.Add(Directory, "Display Size", swapped ? IsoMedia.Size(height, width) : IsoMedia.Size(width, height));
+            if (swapped)
+                report.Add(Directory, "Stored Size", IsoMedia.Size(width, height));
+        }
+        if (quarterTurns != 0)
+            report.Add(Directory, "Rotation", IsoMedia.Rotation(-90 * quarterTurns));
+    }
+
     private static void DescribeProperty(EndianReader r, IsoBox property, ReportBuilder report)
     {
         long body = property.BodyOffset;
         switch (property.Type)
         {
-            case "ispe":
-                report.Add(Directory, "Image Width", r.U32(body + 4).ToString(CultureInfo.InvariantCulture));
-                report.Add(Directory, "Image Height", r.U32(body + 8).ToString(CultureInfo.InvariantCulture));
-                break;
-            case "irot":
-                report.Add(Directory, "Rotation", (r.U8(body) & 3) is var steps and > 0 ? $"{steps * 90}° counter-clockwise" : "None");
-                break;
             case "imir":
                 report.Add(Directory, "Mirror", (r.U8(body) & 1) == 0 ? "Left-right" : "Top-bottom");
                 break;

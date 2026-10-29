@@ -100,8 +100,15 @@ internal static class QuickTimeReader
         if (format is not null)
             report.Add(directory, "Codec", CodecName(format));
 
+        string? displaySize = null;
         if (IsoMedia.Find(r, trak, "tkhd") is { } tkhd && handler == "vide")
-            ReadTrackHeader(r, tkhd, directory, report);
+        {
+            var (width, height, rotation) = ReadTrackHeader(r, tkhd);
+            displaySize = rotation is 90 or 270 ? IsoMedia.Size(height, width) : IsoMedia.Size(width, height);
+            report.Add(directory, "Display Size", displaySize);
+            if (rotation != 0)
+                report.Add(directory, "Rotation", IsoMedia.Rotation(rotation));
+        }
 
         if (mdia is not { } mediaBox || IsoMedia.Find(r, mediaBox, "mdhd") is not { } mdhd)
             return;
@@ -114,7 +121,9 @@ internal static class QuickTimeReader
 
         if (handler == "vide" && entry is { } video && video.End - video.Offset >= 36)
         {
-            report.Add(directory, "Coded Size", $"{r.U16(video.Offset + 32)}×{r.U16(video.Offset + 34)}");
+            string stored = IsoMedia.Size(r.U16(video.Offset + 32), r.U16(video.Offset + 34));
+            if (stored != displaySize)
+                report.Add(directory, "Stored Size", stored);
             if (seconds > 0 && IsoMedia.Find(r, mediaBox, "minf", "stbl", "stts") is { } stts)
                 report.Add(directory, "Frame Rate", (SampleCount(r, stts) / seconds).ToString("0.##", Inv) + " fps");
         }
@@ -125,18 +134,18 @@ internal static class QuickTimeReader
         }
     }
 
-    /// <summary>Display size and rotation from the track header's matrix (iPhone portrait video is rotated 90°).</summary>
-    private static void ReadTrackHeader(EndianReader r, IsoBox tkhd, string directory, ReportBuilder report)
+    /// <summary>
+    /// The track's size before rotation and its clockwise rotation in degrees, from the track header's
+    /// matrix (iPhone portrait video is stored landscape and rotated 90°).
+    /// </summary>
+    private static (double Width, double Height, int Rotation) ReadTrackHeader(EndianReader r, IsoBox tkhd)
     {
         long p = tkhd.BodyOffset;
         long matrix = p + (r.U8(p) == 1 ? 4 + 32 : 4 + 20) + 16;
         double a = r.S32(matrix) / 65536.0, b = r.S32(matrix + 4) / 65536.0;
         double width = r.U32(matrix + 36) / 65536.0, height = r.U32(matrix + 40) / 65536.0;
-        report.Add(directory, "Width", width.ToString("0.##", Inv));
-        report.Add(directory, "Height", height.ToString("0.##", Inv));
         int rotation = ((int)Math.Round(Math.Atan2(b, a) * 180 / Math.PI) + 360) % 360;
-        if (rotation != 0)
-            report.Add(directory, "Rotation", $"{rotation}° clockwise");
+        return (width, height, rotation);
     }
 
     private static long SampleCount(EndianReader r, IsoBox stts)

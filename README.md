@@ -30,7 +30,9 @@ Not yet: CR3, IPTC, ICC profile contents, maker notes (including Apple's).
 
 The preview is the file itself when the platform decoder handles it (JPEG, PNG, WebP), otherwise
 the largest embedded JPEG (EXIF thumbnail or RAW preview), rotated by the EXIF orientation.
-HEIC and video frames are HEVC/H.264, which would need a codec library, so they have no preview.
+On macOS, anything else (HEIC, video, TIFF, RAW without an embedded preview) falls back to a
+Quick Look thumbnail from the system's `qlmanage`. Other platforms show "No preview" for those,
+since decoding HEVC/H.264 would need a codec library.
 
 ## Develop
 

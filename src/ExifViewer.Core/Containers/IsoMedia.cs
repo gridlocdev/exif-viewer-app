@@ -186,6 +186,20 @@ internal static partial class IsoMedia
         return output.ToArray();
     }
 
+    /// <summary>"360×640".</summary>
+    public static string Size(double width, double height) =>
+        $"{width.ToString("0.##", CultureInfo.InvariantCulture)}×{height.ToString("0.##", CultureInfo.InvariantCulture)}";
+
+    /// <summary>A clockwise rotation in plain words: 270° becomes "90° counter-clockwise".</summary>
+    public static string Rotation(int clockwiseDegrees) => (((clockwiseDegrees % 360) + 360) % 360) switch
+    {
+        0 => "None",
+        90 => "90° clockwise",
+        180 => "180°",
+        270 => "90° counter-clockwise",
+        var other => $"{other}° clockwise",
+    };
+
     /// <summary>"+37.7749-122.4194+012.345/" (ISO 6709, decimal degrees) → position and altitude tags.</summary>
     public static void AddIso6709(ReportBuilder report, string directory, string text)
     {
