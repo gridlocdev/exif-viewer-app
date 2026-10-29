@@ -15,6 +15,26 @@ build:
 test:
     dotnet test tests/ExifViewer.Core.Tests
 
-# Self-contained single-file build for one runtime (osx-arm64, osx-x64, win-x64, linux-x64) into dist/<rid>/
-publish rid:
-    dotnet publish src/ExifViewer.App -c Release -r {{rid}} --self-contained -p:PublishSingleFile=true -o dist/{{rid}}
+# Package "EXIF Viewer.app" for this Mac's architecture into dist/
+build-macos:
+    scripts/package-mac.sh
+
+# Package a universal (Apple Silicon + Intel) .app into dist/
+build-macos-universal:
+    scripts/package-mac.sh --arch universal
+
+# Package a self-contained Linux x64 tarball into dist/ (works from macOS too)
+build-linux:
+    scripts/package-linux.sh
+
+# Package a self-contained Windows x64 zip into dist/ (works from macOS or Linux)
+build-windows:
+    scripts/package-windows.sh
+
+# Package and launch the .app
+run-macos: build-macos
+    open "dist/EXIF Viewer.app"
+
+# Delete build output
+clean:
+    rm -rf build dist src/*/bin src/*/obj tests/*/bin tests/*/obj

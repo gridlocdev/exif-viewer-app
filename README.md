@@ -42,8 +42,20 @@ Needs the .NET 10 SDK and [just](https://github.com/casey/just).
 just run            # open the app
 just run photo.jpg  # open a file
 just test           # parser tests
-just publish osx-arm64
+just run-macos      # package the .app and open it
 ```
+
+## Builds and releases
+
+- **CI** (`.github/workflows/ci.yml`) builds and tests on macOS, Windows and Linux for every push to
+  `main` and every pull request.
+- **Releases** (`.github/workflows/release.yml`): push a tag like `v0.2.0` and the workflow runs CI,
+  packages a universal macOS `.app`, a Windows x64 zip and a Linux x64 tarball (all self-contained,
+  no .NET install needed), and publishes them as a GitHub release. Tags with a `-` (`v0.2.0-beta.1`)
+  become pre-releases.
+- Package locally with `just build-macos`, `just build-macos-universal`, `just build-windows` or
+  `just build-linux`; output lands in `dist/`. Builds are ad-hoc signed on macOS and unsigned on
+  Windows; set `MAC_SIGN_IDENTITY` to sign with a Developer ID.
 
 ## Layout
 

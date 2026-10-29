@@ -4,6 +4,8 @@
     <OutputType>WinExe</OutputType>
     <RootNamespace>ExifViewer.App</RootNamespace>
     <AssemblyName>ExifViewer</AssemblyName>
+    <Version>0.1.0</Version>
+    <Product>EXIF Viewer</Product>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
   </PropertyGroup>

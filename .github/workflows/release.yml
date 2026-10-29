@@ -1,0 +1,87 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    uses: ./.github/workflows/ci.yml
+
+  build:
+    name: Package (${{ matrix.name }})
+    needs: test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - name: macOS universal
+            os: macos-latest
+            package: scripts/package-mac.sh --arch universal
+            artifact: macos-universal
+          - name: Linux x64
+            os: ubuntu-latest
+            package: scripts/package-linux.sh
+            artifact: linux-x64
+          - name: Windows x64
+            os: ubuntu-latest
+            package: scripts/package-windows.sh
+            artifact: win-x64
+    env:
+      APP_VERSION: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Strip the leading "v" from the tag
+        run: echo "APP_VERSION=${APP_VERSION#v}" >> "$GITHUB_ENV"
+
+      - name: Package
+        run: ${{ matrix.package }}
+
+      - name: Zip the .app
+        if: runner.os == 'macOS'
+        run: ditto -c -k --keepParent "dist/EXIF Viewer.app" "dist/exif-viewer-$APP_VERSION-macos-universal.zip"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.artifact }}
+          path: |
+            dist/*.zip
+            dist/*.tar.gz
+          if-no-files-found: error
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cat > notes.md <<'NOTES'
+          ## Downloads
+
+          - **macOS** (Apple Silicon and Intel, macOS 12+): `exif-viewer-*-macos-universal.zip`. The app is not notarized, so on first launch right-click it and choose **Open**, or run `xattr -dr com.apple.quarantine "EXIF Viewer.app"`.
+          - **Linux x64**: `exif-viewer-*-linux-x64.tar.gz`. Extract it and run `./exif-viewer/ExifViewer`.
+          - **Windows x64**: `exif-viewer-*-win-x64.zip`. Extract it and run `exif-viewer\ExifViewer.exe`. It is not code-signed, so SmartScreen may warn you: choose **More info** then **Run anyway**.
+
+          All builds are self-contained, so .NET does not need to be installed.
+          NOTES
+          gh release create "$GITHUB_REF_NAME" dist/* \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "EXIF Viewer $GITHUB_REF_NAME" \
+            --notes-file notes.md \
+            --generate-notes \
+            $([[ "$GITHUB_REF_NAME" == *-* ]] && echo --prerelease)

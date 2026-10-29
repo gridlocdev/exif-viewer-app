@@ -13,4 +13,5 @@ Cross-platform EXIF viewer: C#/.NET 10 + Avalonia 12. See README.md.
 - Movies (ISO media that isn't HEIF) load via `IsoMedia.LoadWithoutMediaData`, which drops `mdat` payloads; keep readers independent of absolute media offsets.
 - Preview fallback on macOS is Quick Look (`SystemPreview`, shells out to `/usr/bin/qlmanage`; thumbnails arrive already rotated). Other platforms show "No preview" for HEIC/video; decoding HEVC would need a codec dependency.
 - UI is code-behind with compiled bindings; no MVVM toolkit.
-- `just run [file]`, `just test`, `just publish <rid>`.
+- `just run [file]`, `just test`, `just build-macos|build-macos-universal|build-windows|build-linux` (scripts in `scripts/`, output in `dist/`).
+- CI builds and tests on all three OSes; pushing a `v*` tag publishes a GitHub release. The app version lives in `ExifViewer.App.csproj`.

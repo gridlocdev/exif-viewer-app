@@ -7,3 +7,4 @@ dist/
 .idea/
 TestResults/
 .claude/settings.local.json
+build/
