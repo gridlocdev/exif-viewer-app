@@ -28,11 +28,54 @@
     </Style>
   </Window.Styles>
 
+  <!-- The macOS menu bar. Windows and Linux keep the toolbar and keyboard shortcuts only. -->
+  <NativeMenu.Menu>
+    <NativeMenu>
+      <NativeMenuItem Header="File">
+        <NativeMenu>
+          <NativeMenuItem Header="Open…" Gesture="Meta+O" Click="OnOpenClick" />
+          <NativeMenuItemSeparator />
+          <NativeMenuItem Header="Close Window" Gesture="Meta+W" Click="OnCloseClick" />
+        </NativeMenu>
+      </NativeMenuItem>
+      <NativeMenuItem Header="Edit">
+        <NativeMenu>
+          <NativeMenuItem Header="Cut" Gesture="Meta+X" Click="OnCutClick" />
+          <NativeMenuItem Header="Copy" Gesture="Meta+C" Click="OnCopyClick" />
+          <NativeMenuItem Header="Paste" Gesture="Meta+V" Click="OnPasteClick" />
+          <NativeMenuItem Header="Select All" Gesture="Meta+A" Click="OnSelectAllClick" />
+          <NativeMenuItemSeparator />
+          <NativeMenuItem Header="Find" Gesture="Meta+F" Click="OnFindClick" />
+        </NativeMenu>
+      </NativeMenuItem>
+      <NativeMenuItem Header="View">
+        <NativeMenu>
+          <NativeMenuItem Header="Expand All Groups" Click="OnExpandAllClick" />
+          <NativeMenuItem Header="Collapse All Groups" Click="OnCollapseAllClick" />
+          <NativeMenuItemSeparator />
+          <NativeMenuItem Header="Enter Full Screen" Gesture="Ctrl+Meta+F" Click="OnFullScreenClick" />
+        </NativeMenu>
+      </NativeMenuItem>
+      <NativeMenuItem Header="Window">
+        <NativeMenu>
+          <NativeMenuItem Header="Minimize" Gesture="Meta+M" Click="OnMinimizeClick" />
+          <NativeMenuItem Header="Zoom" Click="OnZoomClick" />
+        </NativeMenu>
+      </NativeMenuItem>
+      <NativeMenuItem Header="Help">
+        <NativeMenu>
+          <NativeMenuItem Header="EXIF Viewer Help" Click="OnHelpClick" />
+          <NativeMenuItem Header="Report an Issue" Click="OnReportIssueClick" />
+        </NativeMenu>
+      </NativeMenuItem>
+    </NativeMenu>
+  </NativeMenu.Menu>
+
   <DockPanel>
     <Border DockPanel.Dock="Top" Padding="12,8" BorderThickness="0,0,0,1"
             BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
       <DockPanel>
-        <Button DockPanel.Dock="Left" Content="Open…" Click="OnOpenClick" ToolTip.Tip="Open an image (Ctrl/Cmd+O)" />
+        <Button DockPanel.Dock="Left" Content="Open…" Click="OnOpenButtonClick" ToolTip.Tip="Open an image (Ctrl/Cmd+O)" />
         <TextBox DockPanel.Dock="Right" x:Name="FilterBox" Width="260" PlaceholderText="Filter tags"
                  TextChanged="OnFilterChanged" />
         <TextBlock x:Name="FileTitle" Margin="12,0" VerticalAlignment="Center" FontWeight="SemiBold"
@@ -65,7 +108,7 @@
           <ItemsControl.ItemTemplate>
             <DataTemplate x:DataType="app:TagGroup">
               <StackPanel>
-                <ToggleButton x:Name="Header" Classes="group" IsChecked="True">
+                <ToggleButton x:Name="Header" Classes="group" IsChecked="{Binding IsExpanded}">
                   <Border BorderThickness="0,0,0,1" Padding="0,0,0,6"
                           BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
                     <StackPanel Orientation="Horizontal" Spacing="8">

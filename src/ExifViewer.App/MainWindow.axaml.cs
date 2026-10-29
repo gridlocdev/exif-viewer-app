@@ -1,3 +1,5 @@
+using System.ComponentModel;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -9,7 +11,25 @@ using ExifViewer.Core;
 namespace ExifViewer.App;
 
 /// <summary>One directory as shown in the list, after filtering.</summary>
-public sealed record TagGroup(string Name, IReadOnlyList<MetadataTag> Tags);
+public sealed class TagGroup(string name, IReadOnlyList<MetadataTag> tags, bool isExpanded) : INotifyPropertyChanged
+{
+    public string Name => name;
+    public IReadOnlyList<MetadataTag> Tags => tags;
+
+    public bool IsExpanded
+    {
+        get => isExpanded;
+        set
+        {
+            if (value == isExpanded)
+                return;
+            isExpanded = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsExpanded)));
+        }
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+}
 
 public partial class MainWindow : Window
 {
@@ -30,13 +50,23 @@ public partial class MainWindow : Window
 
     private const int SystemPreviewSize = 1600;
 
+    private static readonly Uri HelpUri = new("https://github.com/gridlocdev/exif-viewer-app/blob/main/docs/Home.md");
+    private static readonly Uri IssuesUri = new("https://github.com/gridlocdev/exif-viewer-app/issues/new");
+
     private MetadataReport? report;
+    // Group names the user collapsed, so filtering or opening another file keeps them collapsed.
+    private readonly HashSet<string> collapsed = [];
+    // Native menu items aren't controls, so x:Name doesn't reach them.
+    private readonly NativeMenuItem? fullScreenItem;
     // Bumped on every open, so a slow Quick Look render for an earlier file is dropped.
     private int previewVersion;
 
     public MainWindow()
     {
         InitializeComponent();
+        fullScreenItem = NativeMenu.GetMenu(this)?.Items.OfType<NativeMenuItem>()
+            .SelectMany(m => m.Menu?.Items.OfType<NativeMenuItem>() ?? [])
+            .FirstOrDefault(i => i.Header == "Enter Full Screen");
         AddHandler(DragDrop.DragOverEvent, OnDragOver);
         AddHandler(DragDrop.DropEvent, OnDrop);
     }
@@ -137,10 +167,28 @@ public partial class MainWindow : Window
             return;
         string filter = FilterBox.Text?.Trim() ?? "";
         bool Matches(string text) => text.Contains(filter, StringComparison.OrdinalIgnoreCase);
-        GroupList.ItemsSource = report.Directories
-            .Select(d => new TagGroup(d.Name, Matches(d.Name) ? d.Tags : d.Tags.Where(t => Matches(t.Name) || Matches(t.Value)).ToList()))
+        var groups = report.Directories
+            .Select(d => new TagGroup(d.Name, Matches(d.Name) ? d.Tags : d.Tags.Where(t => Matches(t.Name) || Matches(t.Value)).ToList(),
+                !collapsed.Contains(d.Name)))
             .Where(g => g.Tags.Count > 0)
             .ToList();
+        foreach (var group in groups)
+            group.PropertyChanged += OnGroupToggled;
+        GroupList.ItemsSource = groups;
+    }
+
+    private void OnGroupToggled(object? sender, PropertyChangedEventArgs e)
+    {
+        if (sender is TagGroup group && !group.IsExpanded)
+            collapsed.Add(group.Name);
+        else if (sender is TagGroup expanded)
+            collapsed.Remove(expanded.Name);
+    }
+
+    private void SetAllExpanded(bool expanded)
+    {
+        foreach (var group in GroupList.ItemsSource?.OfType<TagGroup>() ?? [])
+            group.IsExpanded = expanded;
     }
 
     private void OnFilterChanged(object? sender, TextChangedEventArgs e) => ShowTags();
@@ -153,7 +201,64 @@ public partial class MainWindow : Window
             await Launcher.LaunchUriAsync(MapLink.For(position));
     }
 
-    private async void OnOpenClick(object? sender, RoutedEventArgs e) => await PickFile();
+    private async void OnOpenButtonClick(object? sender, RoutedEventArgs e) => await PickFile();
+
+    private async void OnOpenClick(object? sender, EventArgs e) => await PickFile();
+
+    private void OnCloseClick(object? sender, EventArgs e) => Close();
+
+    // Edit commands act on whatever has focus: the filter box, or a selectable value.
+    private void OnCutClick(object? sender, EventArgs e) => (FocusManager?.GetFocusedElement() as TextBox)?.Cut();
+
+    private void OnCopyClick(object? sender, EventArgs e)
+    {
+        switch (FocusManager?.GetFocusedElement())
+        {
+            case TextBox box: box.Copy(); break;
+            case SelectableTextBlock text: text.Copy(); break;
+        }
+    }
+
+    private void OnPasteClick(object? sender, EventArgs e) => (FocusManager?.GetFocusedElement() as TextBox)?.Paste();
+
+    private void OnSelectAllClick(object? sender, EventArgs e)
+    {
+        switch (FocusManager?.GetFocusedElement())
+        {
+            case TextBox box: box.SelectAll(); break;
+            case SelectableTextBlock text: text.SelectAll(); break;
+        }
+    }
+
+    private void OnFindClick(object? sender, EventArgs e)
+    {
+        FilterBox.Focus();
+        FilterBox.SelectAll();
+    }
+
+    private void OnExpandAllClick(object? sender, EventArgs e) => SetAllExpanded(true);
+
+    private void OnCollapseAllClick(object? sender, EventArgs e) => SetAllExpanded(false);
+
+    private void OnFullScreenClick(object? sender, EventArgs e) =>
+        WindowState = WindowState == WindowState.FullScreen ? WindowState.Normal : WindowState.FullScreen;
+
+    private void OnMinimizeClick(object? sender, EventArgs e) => WindowState = WindowState.Minimized;
+
+    private void OnZoomClick(object? sender, EventArgs e) =>
+        WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
+
+    private async void OnHelpClick(object? sender, EventArgs e) => await Launcher.LaunchUriAsync(HelpUri);
+
+    private async void OnReportIssueClick(object? sender, EventArgs e) => await Launcher.LaunchUriAsync(IssuesUri);
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        // Also catches the green title-bar button.
+        if (change.Property == WindowStateProperty && fullScreenItem is not null)
+            fullScreenItem.Header = WindowState == WindowState.FullScreen ? "Exit Full Screen" : "Enter Full Screen";
+    }
 
     private async Task PickFile()
     {
@@ -170,10 +275,18 @@ public partial class MainWindow : Window
     protected override async void OnKeyDown(KeyEventArgs e)
     {
         base.OnKeyDown(e);
-        if (e.Key == Key.O && e.KeyModifiers is KeyModifiers.Control or KeyModifiers.Meta)
+        // On macOS the menu bar handles Cmd+O and Cmd+F.
+        if (OperatingSystem.IsMacOS() || e.KeyModifiers != KeyModifiers.Control)
+            return;
+        if (e.Key == Key.O)
         {
             e.Handled = true;
             await PickFile();
+        }
+        else if (e.Key == Key.F)
+        {
+            e.Handled = true;
+            OnFindClick(this, e);
         }
     }
 

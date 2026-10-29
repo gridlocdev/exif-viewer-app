@@ -1,0 +1,15 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="ExifViewer.App.AboutWindow"
+        Title="About EXIF Viewer"
+        SizeToContent="WidthAndHeight" CanResize="False"
+        WindowStartupLocation="CenterOwner">
+  <StackPanel Margin="32,24" Spacing="6" HorizontalAlignment="Center" Width="280">
+    <TextBlock Text="EXIF Viewer" FontSize="20" FontWeight="SemiBold" HorizontalAlignment="Center" />
+    <TextBlock x:Name="VersionText" Opacity="0.6" HorizontalAlignment="Center" />
+    <TextBlock Margin="0,8,0,0" TextWrapping="Wrap" TextAlignment="Center"
+               Text="See the data your camera stores about your photos and videos." />
+    <HyperlinkButton Content="github.com/gridlocdev/exif-viewer-app" HorizontalAlignment="Center"
+                     NavigateUri="https://github.com/gridlocdev/exif-viewer-app" />
+  </StackPanel>
+</Window>

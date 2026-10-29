@@ -19,4 +19,10 @@ public partial class App : Application
         }
         base.OnFrameworkInitializationCompleted();
     }
+
+    private void OnAboutClick(object? sender, EventArgs e)
+    {
+        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime { MainWindow: { } owner })
+            new AboutWindow().ShowDialog(owner);
+    }
 }

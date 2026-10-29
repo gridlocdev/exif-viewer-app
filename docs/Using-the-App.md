@@ -52,7 +52,8 @@ list more room.
 ### The tag list (right)
 
 Everything the app found, in **groups**. Each group has a header with its name and how many tags
-it holds; click the header to fold it away or open it again. [Metadata groups](Metadata-Groups.md)
+it holds; click the header to fold it away or open it again. Folded groups stay folded when you filter or
+open another file. [Metadata groups](Metadata-Groups.md)
 explains what each group is.
 
 Each row has three parts:
@@ -67,7 +68,7 @@ Each row has three parts:
 
 Type in **Filter tags** to show only the rows whose name or value contains that text, ignoring
 upper and lower case. If the text matches a **group name** (say `gps`), that whole group stays
-visible. Clear the box to see everything again.
+visible. Clear the box to see everything again. **Cmd+F** (macOS) or **Ctrl+F** jumps to the box.
 
 Some handy filters: `date`, `gps`, `lens`, `iso`, `size`, `apple`.
 
@@ -85,6 +86,21 @@ Shows the file's format and how many tags were found, for example
 `HEIC (HEIF, HEVC) · 31 tags in 5 groups`. If part of the file couldn't be read, a short warning
 appears here too. Warnings don't mean the rest is wrong; see
 [Warnings and troubleshooting](Troubleshooting.md).
+
+## The menu bar (macOS)
+
+On macOS the app has a standard menu bar:
+
+| Menu | Items |
+|---|---|
+| **EXIF Viewer** | About EXIF Viewer (shows the version), Hide, Quit |
+| **File** | Open… (Cmd+O), Close Window (Cmd+W) |
+| **Edit** | Cut, Copy, Paste, Select All, Find (Cmd+F, jumps to the filter box) |
+| **View** | Expand All Groups, Collapse All Groups, Enter Full Screen (Ctrl+Cmd+F) |
+| **Window** | Minimize (Cmd+M), Zoom |
+| **Help** | EXIF Viewer Help (this documentation), Report an Issue |
+
+On Windows and Linux the toolbar and keyboard shortcuts do the same jobs.
 
 ## Light and dark
 

@@ -1,9 +1,17 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="ExifViewer.App.App"
+             Name="EXIF Viewer"
              RequestedThemeVariant="Default">
   <!-- "Default" follows the system light/dark setting. -->
   <Application.Styles>
     <FluentTheme />
   </Application.Styles>
+
+  <!-- The macOS application menu. Avalonia adds Services, Hide, Show All and Quit after these. -->
+  <NativeMenu.Menu>
+    <NativeMenu>
+      <NativeMenuItem Header="About EXIF Viewer" Click="OnAboutClick" />
+    </NativeMenu>
+  </NativeMenu.Menu>
 </Application>
