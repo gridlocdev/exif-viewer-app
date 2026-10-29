@@ -3,6 +3,8 @@
 A cross-platform desktop app (macOS, Windows, Linux) that shows the metadata inside photos:
 EXIF, GPS, XMP and container details, with a preview of the image.
 
+![EXIF Viewer on macOS showing a QuickTime video: preview on the left, grouped metadata with a Show on map link on the right](docs/images/screenshot.webp)
+
 **[Read the documentation](docs/Home.md)** for how to use the app and what all the data means.
 
 ## Dependencies
