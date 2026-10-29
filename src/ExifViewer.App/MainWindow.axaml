@@ -7,6 +7,27 @@
         Width="1100" Height="720" MinWidth="640" MinHeight="400"
         DragDrop.AllowDrop="True">
 
+  <Window.Styles>
+    <!-- Group headers: a flat toggle (chevron, name, count) instead of Fluent's boxed Expander. -->
+    <Style Selector="ToggleButton.group">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Padding" Value="0,10,0,6" />
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    </Style>
+    <Style Selector="ToggleButton.group:pointerover /template/ ContentPresenter#PART_ContentPresenter, ToggleButton.group:pressed /template/ ContentPresenter#PART_ContentPresenter, ToggleButton.group:checked /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseHighBrush}" />
+    </Style>
+    <Style Selector="ToggleButton.group Path.chevron">
+      <Setter Property="RenderTransform" Value="rotate(0deg)" />
+    </Style>
+    <Style Selector="ToggleButton.group:checked Path.chevron">
+      <Setter Property="RenderTransform" Value="rotate(90deg)" />
+    </Style>
+  </Window.Styles>
+
   <DockPanel>
     <Border DockPanel.Dock="Top" Padding="12,8" BorderThickness="0,0,0,1"
             BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
@@ -34,27 +55,44 @@
                    HorizontalAlignment="Center" VerticalAlignment="Center" />
       </Panel>
 
-      <GridSplitter Grid.Column="1" Width="4" ResizeDirection="Columns"
-                    Background="{DynamicResource SystemControlForegroundBaseLowBrush}" />
+      <!-- A hairline divider; the transparent splitter on top of it gives a wider grab area. -->
+      <Rectangle Grid.Column="1" Width="1" HorizontalAlignment="Center" IsHitTestVisible="False"
+                 Fill="{DynamicResource SystemControlForegroundBaseLowBrush}" />
+      <GridSplitter Grid.Column="1" Width="7" ResizeDirection="Columns" Background="Transparent" />
 
       <ScrollViewer Grid.Column="2" HorizontalScrollBarVisibility="Disabled">
-        <ItemsControl x:Name="GroupList" Margin="12,8,16,16">
+        <ItemsControl x:Name="GroupList" Margin="20,4,20,16">
           <ItemsControl.ItemTemplate>
             <DataTemplate x:DataType="app:TagGroup">
-              <Expander Header="{Binding Title}" IsExpanded="True" Margin="0,4"
-                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
-                <ItemsControl ItemsSource="{Binding Tags}">
+              <StackPanel>
+                <ToggleButton x:Name="Header" Classes="group" IsChecked="True">
+                  <Border BorderThickness="0,0,0,1" Padding="0,0,0,6"
+                          BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                      <Path Classes="chevron" Data="M 0,0 L 4,4 L 0,8" Width="5" Height="8"
+                            VerticalAlignment="Center" StrokeThickness="1.5"
+                            Stroke="{Binding $parent[ToggleButton].Foreground}" />
+                      <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                      <TextBlock Text="{Binding Tags.Count}" Opacity="0.45" />
+                    </StackPanel>
+                  </Border>
+                </ToggleButton>
+                <ItemsControl ItemsSource="{Binding Tags}" Margin="13,4,0,4"
+                              IsVisible="{Binding #Header.IsChecked}">
                   <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="core:MetadataTag">
-                      <Grid ColumnDefinitions="220,*" Margin="0,3" ToolTip.Tip="{Binding IdHex}">
+                      <Grid ColumnDefinitions="200,*,Auto" Margin="0,3">
                         <TextBlock Grid.Column="0" Text="{Binding Name}" Opacity="0.7"
                                    TextTrimming="CharacterEllipsis" Margin="0,0,12,0" />
                         <SelectableTextBlock Grid.Column="1" Text="{Binding Value}" TextWrapping="Wrap" />
+                        <TextBlock Grid.Column="2" Text="{Binding IdHex}" Opacity="0.35" Margin="12,0,0,0"
+                                   FontSize="11" VerticalAlignment="Center"
+                                   FontFamily="Menlo, Consolas, DejaVu Sans Mono, monospace" />
                       </Grid>
                     </DataTemplate>
                   </ItemsControl.ItemTemplate>
                 </ItemsControl>
-              </Expander>
+              </StackPanel>
             </DataTemplate>
           </ItemsControl.ItemTemplate>
         </ItemsControl>

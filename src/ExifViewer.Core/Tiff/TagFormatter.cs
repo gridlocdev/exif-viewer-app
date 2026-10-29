@@ -19,17 +19,20 @@ internal static class TagFormatter
         {
             TagSet.Gps => FormatGps(tag, value, ifd),
             TagSet.Interop => tag == 0x0002 ? Version(value) : null,
-            _ => FormatTiff(tag, value),
+            _ => FormatTiff(tag, value, ifd),
         };
         return special ?? Generic(value);
     }
 
-    private static string? FormatTiff(ushort tag, TiffValue v)
+    private static string? FormatTiff(ushort tag, TiffValue v, IReadOnlyDictionary<ushort, TiffValue> ifd)
     {
         long? i = v.FirstInteger;
         double? d = v.FirstNumber;
         return tag switch
         {
+            0x0132 => DateTime(v, ifd, subSecTag: 0x9290, offsetTag: 0x9010),
+            0x9003 => DateTime(v, ifd, subSecTag: 0x9291, offsetTag: 0x9011),
+            0x9004 => DateTime(v, ifd, subSecTag: 0x9292, offsetTag: 0x9012),
             0x0103 => Lookup(i, Compression),
             0x0106 => Lookup(i, Photometric),
             0x0112 => Lookup(i, Orientations),
@@ -89,6 +92,7 @@ internal static class TagFormatter
             0x0E or 0x10 or 0x17 => Lookup(v.Text, new() { ["T"] = "True north", ["M"] = "Magnetic north" }),
             0x0F or 0x11 or 0x18 => d is double deg ? deg.ToString("0.##", Inv) + "°" : null,
             0x1B or 0x1C => EncodedText(v),
+            0x1D => v.Text.Replace(':', '-'),
             0x1E => Lookup(v.FirstInteger, new() { [0] = "No correction", [1] = "Differential corrected" }),
             _ => null,
         };
@@ -202,6 +206,25 @@ internal static class TagFormatter
             _ => Encoding.UTF8.GetString(body),
         };
         return text.TrimEnd('\0', ' ');
+    }
+
+    /// <summary>
+    /// "2024:05:01 12:34:56" → "2024-05-01 12:34:56", with sub-seconds and the UTC offset appended when the
+    /// same IFD has them. Blank or odd values are shown as written.
+    /// </summary>
+    private static string? DateTime(TiffValue v, IReadOnlyDictionary<ushort, TiffValue> ifd, ushort subSecTag, ushort offsetTag)
+    {
+        string text = v.Text;
+        if (text.Length != 19 || text[4] != ':' || text[7] != ':' || text[10] != ' ')
+            return null;
+        var result = new StringBuilder(text);
+        result[4] = '-';
+        result[7] = '-';
+        if (ifd.TryGetValue(subSecTag, out var subSec) && subSec.Text is { Length: > 0 } fraction && fraction.All(char.IsAsciiDigit))
+            result.Append('.').Append(fraction);
+        if (ifd.TryGetValue(offsetTag, out var offset) && offset.Text is { Length: > 0 } zone)
+            result.Append(' ').Append(zone);
+        return result.ToString();
     }
 
     private static double? Coordinate(TiffValue v)

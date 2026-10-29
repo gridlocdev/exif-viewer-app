@@ -49,13 +49,32 @@ public class ReaderTests
         Assert.Equal("f/2.8", Value(report, "Exif", "F-Number"));
         Assert.Equal("400", Value(report, "Exif", "ISO"));
         Assert.Equal("2.32", Value(report, "Exif", "Exif Version"));
-        Assert.Equal("2024:05:01 12:34:56", Value(report, "Exif", "Date/Time Original"));
+        Assert.Equal("2024-05-01 12:34:56", Value(report, "Exif", "Date/Time Original"));
         Assert.Equal("-0.67 EV", Value(report, "Exif", "Exposure Compensation"));
         Assert.Equal("Fired, Auto", Value(report, "Exif", "Flash"));
         Assert.Equal("50 mm", Value(report, "Exif", "Focal Length"));
         Assert.Equal("24-70mm f/2.8", Value(report, "Exif", "Lens Info"));
         Assert.Equal("6000", Value(report, "JPEG", "Image Width"));
         Assert.Equal("4000", Value(report, "JPEG", "Image Height"));
+    }
+
+    [Fact]
+    public void Dates_GainSubSecondsAndOffsetFromTheSameIfd()
+    {
+        var tiff = TiffBuilder.Build(new Ifd()
+            .Ascii(0x0132, "2024:05:02 08:00:00")
+            .Pointer(0x8769, new Ifd()
+                .Ascii(0x9003, "2024:05:01 12:34:56")
+                .Ascii(0x9011, "+02:00")
+                .Ascii(0x9291, "12")
+                .Ascii(0x9004, "    :  :     :  :  ")));
+
+        var report = MetadataReader.Read(Containers.Jpeg(10, 10, Containers.Exif(tiff)), "d.jpg");
+
+        Assert.Equal("2024-05-02 08:00:00", Value(report, "Image", "Date/Time"));
+        Assert.Equal("2024-05-01 12:34:56.12 +02:00", Value(report, "Exif", "Date/Time Original"));
+        Assert.Equal("+02:00", Value(report, "Exif", "Offset Time Original"));
+        Assert.Equal(":  :     :  :", Value(report, "Exif", "Date/Time Digitized"));
     }
 
     [Fact]
