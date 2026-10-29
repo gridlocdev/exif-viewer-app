@@ -15,3 +15,4 @@ Cross-platform EXIF viewer: C#/.NET 10 + Avalonia 12. See README.md.
 - UI is code-behind with compiled bindings; no MVVM toolkit.
 - `just run [file]`, `just test`, `just build-macos|build-macos-universal|build-windows|build-linux` (scripts in `scripts/`, output in `dist/`).
 - CI builds and tests on all three OSes; pushing a `v*` tag publishes a GitHub release. The app version lives in `ExifViewer.App.csproj`.
+- User docs live in `docs/` (wiki-style: `Home.md`, `_Sidebar.md`, flat hyphenated pages, relative `.md` links). Update the page describing a behaviour in the same commit that changes it.

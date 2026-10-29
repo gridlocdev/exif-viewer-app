@@ -3,6 +3,8 @@
 A cross-platform desktop app (macOS, Windows, Linux) that shows the metadata inside photos:
 EXIF, GPS, XMP and container details, with a preview of the image.
 
+**[Read the documentation](docs/Home.md)** for how to use the app and what all the data means.
+
 ## Dependencies
 
 Few third-party packages, on purpose:
