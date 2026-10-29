@@ -100,6 +100,7 @@ internal static class QuickTimeReader
         if (format is not null)
             report.Add(directory, "Codec", CodecName(format));
 
+        // Size rows together: as displayed, rotation, then as stored when that differs.
         string? displaySize = null;
         if (IsoMedia.Find(r, trak, "tkhd") is { } tkhd && handler == "vide")
         {
@@ -108,6 +109,12 @@ internal static class QuickTimeReader
             report.Add(directory, "Display Size", displaySize);
             if (rotation != 0)
                 report.Add(directory, "Rotation", IsoMedia.Rotation(rotation));
+        }
+        if (handler == "vide" && entry is { } sampleEntry && sampleEntry.End - sampleEntry.Offset >= 36)
+        {
+            string stored = IsoMedia.Size(r.U16(sampleEntry.Offset + 32), r.U16(sampleEntry.Offset + 34));
+            if (stored != displaySize)
+                report.Add(directory, "Stored Size", stored);
         }
 
         if (mdia is not { } mediaBox || IsoMedia.Find(r, mediaBox, "mdhd") is not { } mdhd)
@@ -119,13 +126,9 @@ internal static class QuickTimeReader
         if (Language(r.U16(times.End)) is string language)
             report.Add(directory, "Language", language);
 
-        if (handler == "vide" && entry is { } video && video.End - video.Offset >= 36)
+        if (handler == "vide" && seconds > 0 && IsoMedia.Find(r, mediaBox, "minf", "stbl", "stts") is { } stts)
         {
-            string stored = IsoMedia.Size(r.U16(video.Offset + 32), r.U16(video.Offset + 34));
-            if (stored != displaySize)
-                report.Add(directory, "Stored Size", stored);
-            if (seconds > 0 && IsoMedia.Find(r, mediaBox, "minf", "stbl", "stts") is { } stts)
-                report.Add(directory, "Frame Rate", (SampleCount(r, stts) / seconds).ToString("0.##", Inv) + " fps");
+            report.Add(directory, "Frame Rate", (SampleCount(r, stts) / seconds).ToString("0.##", Inv) + " fps");
         }
         else if (handler == "soun" && entry is { } audio && audio.End - audio.Offset >= 36)
         {
