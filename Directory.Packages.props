@@ -1,0 +1,24 @@
+<Project>
+
+  <!--
+    Every third-party package the solution uses, in one place. Keep this list short:
+    ExifViewer.Core has no package references at all, and the app takes only Avalonia.
+    References elsewhere are version-less.
+  -->
+  <PropertyGroup>
+    <AvaloniaVersion>12.1.4</AvaloniaVersion>
+  </PropertyGroup>
+
+  <ItemGroup Label="UI (ExifViewer.App)">
+    <PackageVersion Include="Avalonia" Version="$(AvaloniaVersion)" />
+    <PackageVersion Include="Avalonia.Desktop" Version="$(AvaloniaVersion)" />
+    <PackageVersion Include="Avalonia.Themes.Fluent" Version="$(AvaloniaVersion)" />
+  </ItemGroup>
+
+  <ItemGroup Label="Testing (dev only, never shipped)">
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.6.0" />
+    <PackageVersion Include="xunit.v3" Version="3.2.2" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
+  </ItemGroup>
+
+</Project>

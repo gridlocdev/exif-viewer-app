@@ -1,0 +1,64 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:app="using:ExifViewer.App"
+        xmlns:core="using:ExifViewer.Core"
+        x:Class="ExifViewer.App.MainWindow"
+        Title="EXIF Viewer"
+        Width="1100" Height="720" MinWidth="640" MinHeight="400"
+        DragDrop.AllowDrop="True">
+
+  <DockPanel>
+    <Border DockPanel.Dock="Top" Padding="12,8" BorderThickness="0,0,0,1"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
+      <DockPanel>
+        <Button DockPanel.Dock="Left" Content="Open…" Click="OnOpenClick" ToolTip.Tip="Open an image (Ctrl/Cmd+O)" />
+        <TextBox DockPanel.Dock="Right" x:Name="FilterBox" Width="260" PlaceholderText="Filter tags"
+                 TextChanged="OnFilterChanged" />
+        <TextBlock x:Name="FileTitle" Margin="12,0" VerticalAlignment="Center" FontWeight="SemiBold"
+                   TextTrimming="CharacterEllipsis" />
+      </DockPanel>
+    </Border>
+
+    <Border DockPanel.Dock="Bottom" Padding="12,6" BorderThickness="0,1,0,0"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
+      <SelectableTextBlock x:Name="StatusText" TextWrapping="Wrap" Opacity="0.75"
+                           Text="Drop an image on the window, or choose Open…" />
+    </Border>
+
+    <Grid ColumnDefinitions="2*,Auto,3*">
+      <Panel Grid.Column="0" Margin="16">
+        <LayoutTransformControl x:Name="PreviewTransform">
+          <Image x:Name="PreviewImage" Stretch="Uniform" />
+        </LayoutTransformControl>
+        <TextBlock x:Name="PreviewPlaceholder" Text="No preview" Opacity="0.5"
+                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+      </Panel>
+
+      <GridSplitter Grid.Column="1" Width="4" ResizeDirection="Columns"
+                    Background="{DynamicResource SystemControlForegroundBaseLowBrush}" />
+
+      <ScrollViewer Grid.Column="2" HorizontalScrollBarVisibility="Disabled">
+        <ItemsControl x:Name="GroupList" Margin="12,8,16,16">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="app:TagGroup">
+              <Expander Header="{Binding Title}" IsExpanded="True" Margin="0,4"
+                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                <ItemsControl ItemsSource="{Binding Tags}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="core:MetadataTag">
+                      <Grid ColumnDefinitions="220,*" Margin="0,3" ToolTip.Tip="{Binding IdHex}">
+                        <TextBlock Grid.Column="0" Text="{Binding Name}" Opacity="0.7"
+                                   TextTrimming="CharacterEllipsis" Margin="0,0,12,0" />
+                        <SelectableTextBlock Grid.Column="1" Text="{Binding Value}" TextWrapping="Wrap" />
+                      </Grid>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </Expander>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
+    </Grid>
+  </DockPanel>
+</Window>

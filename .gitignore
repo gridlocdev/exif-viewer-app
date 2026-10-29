@@ -1,0 +1,9 @@
+bin/
+obj/
+dist/
+*.user
+.DS_Store
+.vs/
+.idea/
+TestResults/
+.claude/settings.local.json

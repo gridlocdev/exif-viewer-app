@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Metadata parsing. No package references: everything here is written against the BCL. -->
+  <PropertyGroup>
+    <RootNamespace>ExifViewer.Core</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="ExifViewer.Core.Tests" />
+  </ItemGroup>
+
+</Project>
