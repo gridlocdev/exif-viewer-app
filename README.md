@@ -20,12 +20,17 @@ Versions live in `Directory.Packages.props`.
 | JPEG | EXIF (APP1), XMP, JFIF, comments, frame header |
 | PNG | eXIf, tEXt/zTXt/iTXt (incl. XMP), IHDR, tIME, pHYs |
 | WebP | EXIF, XMP, VP8X/VP8/VP8L headers |
-| TIFF, DNG, CR2, NEF, ARW, ORF, RW2, PEF | the TIFF structure: IFDs, Exif, GPS, Interop, SubIFDs, embedded JPEG previews |
+| TIFF, DNG (incl. Apple ProRAW), CR2, NEF, ARW, ORF, RW2, PEF | the TIFF structure: IFDs, Exif, GPS, Interop, SubIFDs, embedded JPEG previews |
+| HEIC, HEIF, AVIF | brands, primary image size/rotation/colour, item list, auxiliary images (HDR gain map, depth, mattes), Exif and XMP items |
+| MOV, MP4, M4V | movie header, per-track codec/size/rotation/frame rate/audio format, Apple `mdta` keys (make, model, location, Live Photo content identifier), iTunes-style tags, QuickTime user data |
 
-Not yet: HEIC/AVIF/CR3/MP4 (ISO base media boxes), IPTC, ICC profiles, maker notes.
+Movies are read without their media data, so multi-gigabyte videos open instantly.
+
+Not yet: CR3, IPTC, ICC profile contents, maker notes (including Apple's).
 
 The preview is the file itself when the platform decoder handles it (JPEG, PNG, WebP), otherwise
 the largest embedded JPEG (EXIF thumbnail or RAW preview), rotated by the EXIF orientation.
+HEIC and video frames are HEVC/H.264, which would need a codec library, so they have no preview.
 
 ## Develop
 
@@ -40,7 +45,7 @@ just publish osx-arm64
 
 ## Layout
 
-- `src/ExifViewer.Core/` – `MetadataReader` detects the container; `Containers/` reads JPEG, PNG
-  and WebP; `Tiff/` walks IFDs and formats tag values; `Xmp/` flattens XMP packets.
+- `src/ExifViewer.Core/` – `MetadataReader` detects the container; `Containers/` reads JPEG, PNG,
+  WebP, HEIF and QuickTime/MP4 (`IsoMedia` walks the shared box structure); `Tiff/` walks IFDs and formats tag values; `Xmp/` flattens XMP packets.
 - `src/ExifViewer.App/` – the Avalonia window (code-behind, no MVVM framework).
 - `tests/ExifViewer.Core.Tests/` – fixtures are built in code (`Fixtures.cs`), so the repo has no sample photos.

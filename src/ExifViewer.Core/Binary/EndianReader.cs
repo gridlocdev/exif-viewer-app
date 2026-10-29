@@ -44,6 +44,12 @@ internal readonly struct EndianReader
         return BigEndian ? BinaryPrimitives.ReadUInt32BigEndian(s) : BinaryPrimitives.ReadUInt32LittleEndian(s);
     }
 
+    public ulong U64(long offset)
+    {
+        var s = Span(offset, 8);
+        return BigEndian ? BinaryPrimitives.ReadUInt64BigEndian(s) : BinaryPrimitives.ReadUInt64LittleEndian(s);
+    }
+
     public short S16(long offset) => unchecked((short)U16(offset));
     public int S32(long offset) => unchecked((int)U32(offset));
 

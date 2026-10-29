@@ -9,10 +9,7 @@ using ExifViewer.Core;
 namespace ExifViewer.App;
 
 /// <summary>One directory as shown in the list, after filtering.</summary>
-public sealed record TagGroup(string Name, IReadOnlyList<MetadataTag> Tags)
-{
-    public string Title => $"{Name} ({Tags.Count})";
-}
+public sealed record TagGroup(string Name, IReadOnlyList<MetadataTag> Tags);
 
 public partial class MainWindow : Window
 {
@@ -22,7 +19,13 @@ public partial class MainWindow : Window
         [
             "*.jpg", "*.jpeg", "*.png", "*.webp", "*.tif", "*.tiff",
             "*.dng", "*.cr2", "*.nef", "*.nrw", "*.arw", "*.orf", "*.rw2", "*.pef",
+            "*.heic", "*.heif", "*.avif",
         ],
+    };
+
+    private static readonly FilePickerFileType Videos = new("Videos")
+    {
+        Patterns = ["*.mov", "*.mp4", "*.m4v", "*.3gp"],
     };
 
     private MetadataReport? report;
@@ -64,6 +67,7 @@ public partial class MainWindow : Window
             ?? (metadata.Preview is { } jpeg ? TryDecode(() => new Bitmap(new MemoryStream(jpeg.ToArray()))) : null);
         PreviewImage.Source = bitmap;
         PreviewPlaceholder.IsVisible = bitmap is null;
+        PreviewPlaceholder.Text = $"No preview for {metadata.Format}";
         PreviewTransform.LayoutTransform = metadata.Orientation switch
         {
             3 => new RotateTransform(180),
@@ -107,7 +111,7 @@ public partial class MainWindow : Window
         {
             Title = "Open image",
             AllowMultiple = false,
-            FileTypeFilter = [Images, FilePickerFileTypes.All],
+            FileTypeFilter = [Images, Videos, FilePickerFileTypes.All],
         });
         if (files.Count > 0 && files[0].TryGetLocalPath() is string path)
             Open(path);

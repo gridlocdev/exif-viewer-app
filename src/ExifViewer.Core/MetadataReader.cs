@@ -11,17 +11,28 @@ public static class MetadataReader
     public static MetadataReport Read(string path)
     {
         var info = new FileInfo(path);
-        return Read(File.ReadAllBytes(path), info.Name, info.LastWriteTime);
+        using var stream = info.OpenRead();
+        var head = new byte[Math.Min(4096, info.Length)];
+        stream.ReadExactly(head);
+        stream.Position = 0;
+        // Movies can be gigabytes, almost all of it media data; read just their structure.
+        if (IsoMedia.HasHeader(head) && !IsoMedia.IsHeif(head))
+            return Read(IsoMedia.LoadWithoutMediaData(stream), info.Name, info.LastWriteTime, info.Length);
+
+        var data = new byte[info.Length];
+        stream.ReadExactly(data);
+        return Read(data, info.Name, info.LastWriteTime);
     }
 
-    public static MetadataReport Read(ReadOnlyMemory<byte> data, string fileName, DateTime? modified = null)
+    /// <param name="fileSize">The file's real size, when <paramref name="data"/> leaves parts of it out.</param>
+    public static MetadataReport Read(ReadOnlyMemory<byte> data, string fileName, DateTime? modified = null, long? fileSize = null)
     {
         var report = new ReportBuilder();
         var s = data.Span;
         string format = DescribeFormat(s, fileName);
 
         report.Add("File", "File Name", fileName);
-        report.Add("File", "File Size", FormatSize(data.Length));
+        report.Add("File", "File Size", FormatSize(fileSize ?? data.Length));
         report.Add("File", "Format", format);
         if (modified is DateTime m)
             report.Add("File", "Modified", m.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture));
@@ -36,8 +47,10 @@ public static class MetadataReader
                 WebPReader.Read(data, report);
             else if (TiffReader.HasHeader(s))
                 TiffReader.Read(data, report);
-            else if (IsIsoMedia(s))
-                report.Warn("HEIF, AVIF, CR3 and MP4/MOV files aren't read yet.");
+            else if (IsoMedia.HasHeader(s) && IsoMedia.IsHeif(s))
+                HeifReader.Read(data, report);
+            else if (IsoMedia.HasHeader(s))
+                QuickTimeReader.Read(data, report);
             else
                 report.Warn("Not a format ExifViewer can read.");
         }
@@ -68,12 +81,9 @@ public static class MetadataReader
                 _ => "TIFF",
             };
         }
-        if (IsIsoMedia(s)) return "ISO media (" + System.Text.Encoding.ASCII.GetString(s[8..12]).Trim() + ")";
+        if (IsoMedia.HasHeader(s)) return IsoMedia.DescribeFormat(s, fileName);
         return "Unknown";
     }
-
-    /// <summary>ISO base media files (HEIC, AVIF, CR3, MP4, MOV) start with an "ftyp" box.</summary>
-    private static bool IsIsoMedia(ReadOnlySpan<byte> s) => s.Length >= 12 && s[4..8].SequenceEqual("ftyp"u8);
 
     internal static string FormatSize(long bytes)
     {
