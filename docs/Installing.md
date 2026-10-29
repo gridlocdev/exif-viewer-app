@@ -16,9 +16,15 @@ Downloads are on the project's GitHub **Releases** page. Pick the file for your 
 The builds aren't signed with a paid developer certificate yet, so your system may warn you the
 first time:
 
-- **macOS** says the app "can't be opened because Apple cannot check it". Right-click the app,
-  choose **Open**, then **Open** again. Or, in Terminal:
-  `xattr -dr com.apple.quarantine "EXIF Viewer.app"`. You only need to do this once.
+- **macOS** won't open the app the first time and says Apple can't check it for malicious
+  software. You only need to get past this once:
+  - **macOS 15 (Sequoia) or later:** after the warning, open **System Settings → Privacy &
+    Security**, scroll down to the message about EXIF Viewer, click **Open Anyway** and confirm
+    with your password or Touch ID.
+  - **macOS 12 to 14:** right-click (or Control-click) the app, choose **Open**, then **Open**
+    again.
+  - **Any version**, in Terminal: `xattr -dr com.apple.quarantine "EXIF Viewer.app"`, then open
+    the app normally.
 - **Windows** SmartScreen may say "Windows protected your PC". Choose **More info**, then
   **Run anyway**.
 

@@ -73,7 +73,7 @@ jobs:
           cat > notes.md <<'NOTES'
           ## Downloads
 
-          - **macOS** (Apple Silicon and Intel, macOS 12+): `exif-viewer-*-macos-universal.zip`. The app is not notarized, so on first launch right-click it and choose **Open**, or run `xattr -dr com.apple.quarantine "EXIF Viewer.app"`.
+          - **macOS** (Apple Silicon and Intel, macOS 12+): `exif-viewer-*-macos-universal.zip`. The app is not notarized, so macOS blocks the first launch. On macOS 15 or later, open **System Settings → Privacy & Security** and click **Open Anyway**; on macOS 12–14, right-click the app and choose **Open**. Or, on any version, run `xattr -dr com.apple.quarantine "EXIF Viewer.app"`.
           - **Linux x64**: `exif-viewer-*-linux-x64.tar.gz`. Extract it and run `./exif-viewer/ExifViewer`.
           - **Windows x64**: `exif-viewer-*-win-x64.zip`. Extract it and run `exif-viewer\ExifViewer.exe`. It is not code-signed, so SmartScreen may warn you: choose **More info** then **Run anyway**.
 
