@@ -8,3 +8,11 @@ dist/
 TestResults/
 .claude/settings.local.json
 build/
+.vscode/
+*.swp
+*~
+coverage/
+*.coverage
+coverage*.xml
+# Real photos and videos for manual testing; may contain personal data such as GPS locations.
+samples/

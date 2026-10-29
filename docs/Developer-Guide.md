@@ -68,7 +68,7 @@ just test
 Fixtures are **built in code**: `TiffBuilder` and `Ifd` lay out TIFF/EXIF blocks, `Containers`
 wraps them in JPEG/PNG/WebP, and `Iso`/`IsoFixtures` build HEIC and MOV files box by box. Don't
 commit sample photos; they bloat the repository and may contain personal data. To check against
-real files, use files you made yourself, as shown in the commit history.
+real files, put them in `samples/` at the repository root, which git ignores.
 
 ## Building and releasing
 

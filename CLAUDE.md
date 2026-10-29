@@ -9,7 +9,7 @@ Cross-platform EXIF viewer: C#/.NET 10 + Avalonia 12. See README.md.
 - Parsers never throw on bad input: out-of-range reads throw `MalformedDataException` from
   `EndianReader`, and readers catch it and add a warning to the report while keeping what they read.
 - Tag value formatting is culture-invariant (`TagFormatter`), so tests are stable.
-- Test fixtures are built in code (`TiffBuilder`, `Containers` in `Fixtures.cs`; `Iso`/`IsoFixtures` for HEIC and MOV); don't commit sample photos.
+- Test fixtures are built in code (`TiffBuilder`, `Containers` in `Fixtures.cs`; `Iso`/`IsoFixtures` for HEIC and MOV); don't commit sample photos (real test files go in the git-ignored `samples/`).
 - Movies (ISO media that isn't HEIF) load via `IsoMedia.LoadWithoutMediaData`, which drops `mdat` payloads; keep readers independent of absolute media offsets.
 - Preview fallback on macOS is Quick Look (`SystemPreview`, shells out to `/usr/bin/qlmanage`; thumbnails arrive already rotated). Other platforms show "No preview" for HEIC/video; decoding HEVC would need a codec dependency.
 - UI is code-behind with compiled bindings; no MVVM toolkit.
