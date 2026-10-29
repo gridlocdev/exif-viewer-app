@@ -91,7 +91,34 @@ public class ReaderTests
         Assert.Equal("12.5 m", Value(report, "GPS", "Altitude"));
         Assert.Equal("14:05:30 UTC", Value(report, "GPS", "Time Stamp"));
         Assert.Equal("37.774900, -122.419400", Value(report, "GPS", "Position"));
+        var position = report.Find("GPS", "Position")?.Position;
+        Assert.NotNull(position);
+        Assert.Equal(37.7749, position.Latitude, 6);
+        Assert.Equal(-122.4194, position.Longitude, 6);
+        Assert.Null(report.Find("GPS", "Latitude")?.Position);
     }
+
+    [Fact]
+    public void Gps_SouthernHemisphereIsNegative()
+    {
+        var tiff = TiffBuilder.Build(new Ifd().Pointer(0x8825, new Ifd()
+            .Ascii(0x01, "S").Rational(0x02, (33, 1), (52, 1), (0, 1))
+            .Ascii(0x03, "E").Rational(0x04, (151, 1), (12, 1), (0, 1))));
+
+        var report = MetadataReader.Read(Containers.Jpeg(10, 10, Containers.Exif(tiff)), "sydney.jpg");
+
+        var position = report.Find("GPS", "Position")?.Position;
+        Assert.NotNull(position);
+        Assert.Equal(-33.866667, position.Latitude, 6);
+        Assert.Equal(151.2, position.Longitude, 6);
+    }
+
+    [Theory]
+    [InlineData(91, 0)]
+    [InlineData(0, 181)]
+    [InlineData(double.NaN, 0)]
+    public void GeoPosition_RejectsImpossibleCoordinates(double lat, double lon) =>
+        Assert.Null(GeoPosition.Create(lat, lon));
 
     [Fact]
     public void BigEndianTiff_IsReadAsTiffFile()

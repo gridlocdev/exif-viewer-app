@@ -60,6 +60,7 @@ public class IsoMediaTests
         Assert.Equal("Apple", Value(report, "QuickTime Metadata", "Make"));
         Assert.Equal("+37.7749-122.4194+012.345/", Value(report, "QuickTime Metadata", "Location (ISO 6709)"));
         Assert.Equal("37.774900, -122.419400", Value(report, "QuickTime Metadata", "Position"));
+        Assert.Equal(new GeoPosition(37.7749, -122.4194), report.Find("QuickTime Metadata", "Position")?.Position);
         Assert.Equal("12.3 m", Value(report, "QuickTime Metadata", "Altitude"));
         Assert.Equal("6A1D7C42-0B5C-4E7A-9D0E-1F2A3B4C5D6E", Value(report, "QuickTime Metadata", "Content Identifier"));
         Assert.Equal("0.75", Value(report, "QuickTime Metadata", "Live Photo Vitality Score"));

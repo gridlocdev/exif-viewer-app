@@ -84,7 +84,12 @@
                       <Grid ColumnDefinitions="200,*,Auto" Margin="0,3">
                         <TextBlock Grid.Column="0" Text="{Binding Name}" Opacity="0.7"
                                    TextTrimming="CharacterEllipsis" Margin="0,0,12,0" />
-                        <SelectableTextBlock Grid.Column="1" Text="{Binding Value}" TextWrapping="Wrap" />
+                        <StackPanel Grid.Column="1">
+                          <SelectableTextBlock Text="{Binding Value}" TextWrapping="Wrap" />
+                          <HyperlinkButton Content="Show on map" Padding="0" Margin="0,2,0,0"
+                                           IsVisible="{Binding HasPosition}" Click="OnShowOnMapClick"
+                                           ToolTip.Tip="{x:Static app:MainWindow.MapTip}" />
+                        </StackPanel>
                         <TextBlock Grid.Column="2" Text="{Binding IdHex}" Opacity="0.35" Margin="12,0,0,0"
                                    FontSize="11" VerticalAlignment="Center"
                                    FontFamily="Menlo, Consolas, DejaVu Sans Mono, monospace" />

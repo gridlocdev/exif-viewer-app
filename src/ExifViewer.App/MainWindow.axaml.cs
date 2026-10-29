@@ -145,6 +145,14 @@ public partial class MainWindow : Window
 
     private void OnFilterChanged(object? sender, TextChangedEventArgs e) => ShowTags();
 
+    public static string MapTip => $"Open this position in {MapLink.ServiceName}";
+
+    private async void OnShowOnMapClick(object? sender, RoutedEventArgs e)
+    {
+        if ((sender as Control)?.DataContext is MetadataTag { Position: { } position })
+            await Launcher.LaunchUriAsync(MapLink.For(position));
+    }
+
     private async void OnOpenClick(object? sender, RoutedEventArgs e) => await PickFile();
 
     private async Task PickFile()

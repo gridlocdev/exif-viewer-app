@@ -123,8 +123,8 @@ internal sealed class TiffReader
             directory.Tags.Add(new MetadataTag(TagNames.Get(set, tag), TagFormatter.Format(set, tag, value, byTag), tag));
         }
 
-        if (set == TagSet.Gps && TagFormatter.Position(byTag) is string position)
-            directory.Tags.Add(new MetadataTag("Position", position));
+        if (set == TagSet.Gps && TagFormatter.Position(byTag) is { } position)
+            directory.Tags.Add(MetadataTag.ForPosition(position));
         if (name == "Image" && byTag.TryGetValue(0x0112, out var orientation))
             report.Orientation = (int?)orientation.FirstInteger;
         if (set == TagSet.Tiff)

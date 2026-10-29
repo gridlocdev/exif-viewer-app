@@ -33,6 +33,27 @@ public sealed class MetadataDirectory(string name)
 public sealed record MetadataTag(string Name, string Value, int? Id = null)
 {
     public string IdHex => Id is int id ? $"0x{id:X4}" : "";
+
+    /// <summary>Set on "Position" tags, so the UI can offer to show the place on a map.</summary>
+    public GeoPosition? Position { get; init; }
+
+    public bool HasPosition => Position is not null;
+
+    public static MetadataTag ForPosition(GeoPosition position) => new("Position", position.ToString()) { Position = position };
+}
+
+/// <summary>A point in decimal degrees: latitude north-positive, longitude east-positive.</summary>
+public sealed record GeoPosition(double Latitude, double Longitude)
+{
+    /// <summary>The position if both values are real coordinates, else null.</summary>
+    public static GeoPosition? Create(double latitude, double longitude) =>
+        double.IsFinite(latitude) && double.IsFinite(longitude) && Math.Abs(latitude) <= 90 && Math.Abs(longitude) <= 180
+            ? new GeoPosition(latitude, longitude)
+            : null;
+
+    /// <summary>"37.774900, -122.419400".</summary>
+    public override string ToString() =>
+        $"{Latitude.ToString("0.000000", CultureInfo.InvariantCulture)}, {Longitude.ToString("0.000000", CultureInfo.InvariantCulture)}";
 }
 
 public readonly record struct Rational(long Numerator, long Denominator)

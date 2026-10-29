@@ -98,8 +98,8 @@ internal static class TagFormatter
         };
     }
 
-    /// <summary>"37.774900, -122.419400" from the GPS IFD's latitude and longitude, or null if either is missing.</summary>
-    public static string? Position(IReadOnlyDictionary<ushort, TiffValue> gps)
+    /// <summary>The GPS IFD's latitude and longitude as signed decimal degrees, or null if either is missing.</summary>
+    public static GeoPosition? Position(IReadOnlyDictionary<ushort, TiffValue> gps)
     {
         double? Signed(ushort tag, ushort refTag, string negative)
         {
@@ -108,7 +108,7 @@ internal static class TagFormatter
             return gps.TryGetValue(refTag, out var r) && r.Text == negative ? -c : c;
         }
         return Signed(0x02, 0x01, "S") is double lat && Signed(0x04, 0x03, "W") is double lon
-            ? $"{lat.ToString("0.000000", Inv)}, {lon.ToString("0.000000", Inv)}"
+            ? GeoPosition.Create(lat, lon)
             : null;
     }
 

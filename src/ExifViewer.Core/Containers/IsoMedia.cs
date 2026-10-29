@@ -208,9 +208,9 @@ internal static partial class IsoMedia
             return;
         double lat = double.Parse(m.Groups[1].Value, CultureInfo.InvariantCulture);
         double lon = double.Parse(m.Groups[2].Value, CultureInfo.InvariantCulture);
-        if (Math.Abs(lat) > 90 || Math.Abs(lon) > 180)
+        if (GeoPosition.Create(lat, lon) is not { } position)
             return;
-        report.Add(directory, "Position", $"{lat.ToString("0.000000", CultureInfo.InvariantCulture)}, {lon.ToString("0.000000", CultureInfo.InvariantCulture)}");
+        report.GetDirectory(directory).Tags.Add(MetadataTag.ForPosition(position));
         if (m.Groups[3].Success)
             report.Add(directory, "Altitude", double.Parse(m.Groups[3].Value, CultureInfo.InvariantCulture).ToString("0.#", CultureInfo.InvariantCulture) + " m");
     }
