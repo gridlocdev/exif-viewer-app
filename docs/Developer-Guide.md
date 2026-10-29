@@ -4,6 +4,28 @@ EXIF Viewer is C# on .NET 10, with an [Avalonia](https://avaloniaui.net/) 12 UI.
 `CLAUDE.md` at the repository root apply to everyone working on it; the most important is
 **keep dependencies minimal**.
 
+## Getting set up
+
+You need the .NET 10 SDK and [just](https://github.com/casey/just). Then, from the repository root:
+
+```bash
+just run            # build and open the app
+just run photo.jpg  # open a file straight away
+just test           # run the parser tests
+just run-macos      # package EXIF Viewer.app and open it
+```
+
+## Dependencies
+
+Few third-party packages, on purpose. Ask before adding one.
+
+- **ExifViewer.Core** (the parser): none, only the .NET base library.
+- **ExifViewer.App** (the UI): [Avalonia](https://avaloniaui.net/) (`Avalonia`, `Avalonia.Desktop`,
+  `Avalonia.Themes.Fluent`).
+- **Tests**: xUnit v3, dev only, never shipped.
+
+Versions live in `Directory.Packages.props`; project files reference packages without versions.
+
 ## Layout
 
 ```
@@ -34,6 +56,19 @@ docs/                       these pages
    are offered as preview candidates; the largest one that's displayable wins.
 5. `ReportBuilder.Build` returns a `MetadataReport`. The UI only displays it.
 
+### Previews
+
+The window picks the first preview that works:
+
+1. The file itself, decoded by Avalonia (JPEG, PNG, WebP).
+2. The largest displayable JPEG embedded in the file (`MetadataReport.Preview`: the EXIF thumbnail
+   or a RAW preview), rotated and mirrored by the EXIF orientation.
+3. On macOS only, a Quick Look thumbnail (`SystemPreview` runs `/usr/bin/qlmanage`). Quick Look
+   applies rotation itself, so the app doesn't rotate it again.
+
+Other platforms show "No preview" for HEIC and video, since decoding HEVC/H.264 would need a
+codec library.
+
 ### Rules for parsers
 
 - **Never throw on bad input.** `EndianReader` throws `MalformedDataException` on any out-of-range
@@ -56,8 +91,8 @@ docs/                       these pages
 1. Add a reader under `Containers/` with a `HasHeader` check and a `Read(data, report)` method.
 2. Register both in `MetadataReader` (detection and `DescribeFormat`).
 3. Add a fixture builder and tests. See `IsoFixtures.cs` for an example.
-4. Update [Supported formats](Supported-Formats.md), [Metadata groups](Metadata-Groups.md) and
-   the README's format table.
+4. Update [Supported formats](Supported-Formats.md), [Metadata groups](Metadata-Groups.md) and,
+   if it's a format people would look for, the README's short list.
 
 ## Tests
 

@@ -1,6 +1,6 @@
 # exif-viewer
 
-Cross-platform EXIF viewer: C#/.NET 10 + Avalonia 12. See README.md.
+Cross-platform EXIF viewer: C#/.NET 10 + Avalonia 12. Technical overview: docs/Developer-Guide.md (README.md is for users).
 
 - Keep third-party dependencies minimal (the user's explicit wish). ExifViewer.Core has no package
   references and must stay that way; the app takes only Avalonia. Ask before adding any package.

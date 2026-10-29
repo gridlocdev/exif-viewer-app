@@ -1,69 +1,47 @@
 # EXIF Viewer
 
-A cross-platform desktop app (macOS, Windows, Linux) that shows the metadata inside photos:
-EXIF, GPS, XMP and container details, with a preview of the image.
+See what's stored inside your photos and videos: when and where they were taken, which camera
+and settings made them, which way up they go, and more. For macOS, Windows and Linux.
 
 ![EXIF Viewer on macOS showing a QuickTime video: preview on the left, grouped metadata with a Show on map link on the right](docs/images/screenshot.webp)
 
-**[Read the documentation](docs/Home.md)** for how to use the app and what all the data means.
+## What it does
 
-## Dependencies
+- **Shows everything in one place**, grouped by where it came from: camera settings, dates,
+  location, image size, editing software, and the file itself.
+- **Makes it readable**: `1/250 s` instead of `0.004`, `f/2.8`, `Fired, Auto`, dates with their
+  time zone, and sizes the way the picture is actually shown.
+- **Shows where a photo was taken** and opens it on a map with one click.
+- **Previews the picture**, turned the right way up.
+- **Finds things fast**: type in the filter box to show only matching rows.
+- **Never changes your files.** It only reads them, and it doesn't go online unless you click a
+  map link.
 
-Few third-party packages, on purpose:
+## Works with
 
-- **ExifViewer.Core** (the parser): none, only the .NET base library.
-- **ExifViewer.App** (the UI): [Avalonia](https://avaloniaui.net/) (`Avalonia`, `Avalonia.Desktop`, `Avalonia.Themes.Fluent`).
-- **Tests**: xUnit v3, dev only.
+- **Photos**: JPEG, PNG, WebP, HEIC (iPhone), AVIF and TIFF
+- **Camera RAW**: Canon, Nikon, Sony, Olympus, Panasonic and Pentax, plus DNG and Apple ProRAW
+- **Videos**: MOV (iPhone) and MP4, opening instantly however large they are
 
-Versions live in `Directory.Packages.props`.
+Details are in [Supported formats](docs/Supported-Formats.md).
 
-## Formats
+## Download
 
-| Format | What's read |
-|---|---|
-| JPEG | EXIF (APP1), XMP, JFIF, comments, frame header |
-| PNG | eXIf, tEXt/zTXt/iTXt (incl. XMP), IHDR, tIME, pHYs |
-| WebP | EXIF, XMP, VP8X/VP8/VP8L headers |
-| TIFF, DNG (incl. Apple ProRAW), CR2, NEF, ARW, ORF, RW2, PEF | the TIFF structure: IFDs, Exif, GPS, Interop, SubIFDs, embedded JPEG previews |
-| HEIC, HEIF, AVIF | brands, primary image size/rotation/colour, item list, auxiliary images (HDR gain map, depth, mattes), Exif and XMP items |
-| MOV, MP4, M4V | movie header, per-track codec/size/rotation/frame rate/audio format, Apple `mdta` keys (make, model, location, Live Photo content identifier), iTunes-style tags, QuickTime user data |
+Get the latest version for your system from the [Releases](../../releases) page. Nothing else
+needs installing. The first time you open it, macOS or Windows may ask you to confirm; the
+[installing guide](docs/Installing.md) shows how.
 
-Movies are read without their media data, so multi-gigabyte videos open instantly.
+## Documentation
 
-Not yet: CR3, IPTC, ICC profile contents, maker notes (including Apple's).
+**[Read the documentation](docs/Home.md)** for how to use the app and what all the data means,
+for example:
 
-The preview is the file itself when the platform decoder handles it (JPEG, PNG, WebP), otherwise
-the largest embedded JPEG (EXIF thumbnail or RAW preview), rotated by the EXIF orientation.
-On macOS, anything else (HEIC, video, TIFF, RAW without an embedded preview) falls back to a
-Quick Look thumbnail from the system's `qlmanage`. Other platforms show "No preview" for those,
-since decoding HEVC/H.264 would need a codec library.
+- [Why does a photo have three different dates?](docs/Dates-and-Times.md)
+- [What do shutter speed, f-number and ISO mean?](docs/Camera-Settings.md)
+- [Where was this taken, and who can see that?](docs/Location-Data.md)
+- [What's inside an iPhone photo or Live Photo?](docs/Apple-Photos-and-Videos.md)
 
-## Develop
+## For developers
 
-Needs the .NET 10 SDK and [just](https://github.com/casey/just).
-
-```bash
-just run            # open the app
-just run photo.jpg  # open a file
-just test           # parser tests
-just run-macos      # package the .app and open it
-```
-
-## Builds and releases
-
-- **CI** (`.github/workflows/ci.yml`) builds and tests on macOS, Windows and Linux for every push to
-  `main` and every pull request.
-- **Releases** (`.github/workflows/release.yml`): push a tag like `v0.2.0` and the workflow runs CI,
-  packages a universal macOS `.app`, a Windows x64 zip and a Linux x64 tarball (all self-contained,
-  no .NET install needed), and publishes them as a GitHub release. Tags with a `-` (`v0.2.0-beta.1`)
-  become pre-releases.
-- Package locally with `just build-macos`, `just build-macos-universal`, `just build-windows` or
-  `just build-linux`; output lands in `dist/`. Builds are ad-hoc signed on macOS and unsigned on
-  Windows; set `MAC_SIGN_IDENTITY` to sign with a Developer ID.
-
-## Layout
-
-- `src/ExifViewer.Core/` – `MetadataReader` detects the container; `Containers/` reads JPEG, PNG,
-  WebP, HEIF and QuickTime/MP4 (`IsoMedia` walks the shared box structure); `Tiff/` walks IFDs and formats tag values; `Xmp/` flattens XMP packets.
-- `src/ExifViewer.App/` – the Avalonia window (code-behind, no MVVM framework).
-- `tests/ExifViewer.Core.Tests/` – fixtures are built in code (`Fixtures.cs`), so the repo has no sample photos.
+Building, testing, the code layout and releases are covered in the
+[developer guide](docs/Developer-Guide.md).
