@@ -19,6 +19,8 @@ public static class MetadataReader
         if (IsoMedia.HasHeader(head) && !IsoMedia.IsHeif(head))
             return Read(IsoMedia.LoadWithoutMediaData(stream), info.Name, info.LastWriteTime, info.Length);
 
+        if (info.Length > Array.MaxLength)
+            throw new IOException($"The file is {FormatSize(info.Length)}; only videos larger than 2 GB can be read.");
         var data = new byte[info.Length];
         stream.ReadExactly(data);
         return Read(data, info.Name, info.LastWriteTime);
